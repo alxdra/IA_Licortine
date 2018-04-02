@@ -8,19 +8,22 @@
 #define HAUTEUR_FENETRE     900
 #define NB_BLOCS_LARGEUR    LARGEUR_FENETRE / TAILLE_BLOC
 #define NB_BLOCS_HAUTEUR    HAUTEUR_FENETRE/ TAILLE_BLOC
-#define MINY    TAILLE_BLOC*2 + 7
-#define MINX    TAILLE_BLOC + 7
+#define MINY    TAILLE_BLOC*2 + 5
+#define MINX    TAILLE_BLOC + 5
 #define MAXY    NB_BLOCS_HAUTEUR - TAILLE_BLOC - 4
 #define MAXX    NB_BLOCS_LARGEUR - TAILLE_BLOC - 8
-#define VOLUME  0//15
+#define VOLUME  3 //15
 #define BLUE_BONUS  5
 #define RED_BONUS   20
 #define ECART 33
-#define NB_PLAYER 4       // vous pouvez mettre le nombre de joueurs que vous voulez
+#define NB_PLAYER 2         // vous pouvez mettre le nombre de joueurs que vous voulez
 #define DEGAT_EPEE 5
 #define RECUP_RUBIS 3
 #define CENTRE_CERCLE_X  (LARGEUR_FENETRE/2 -50) / TAILLE_BLOC
 #define CENTRE_CERCLE_Y  (HAUTEUR_FENETRE/2) / TAILLE_BLOC
+#define DEGAT_BOMBE 75
+#define RECUP_DEGAT_BOMBE 25
+#define RAYON_BOMBE 10
 
 /*
     Ajout de la structure propre à chaque IA
@@ -54,7 +57,7 @@ struct Item
 
 enum {UP, DOWN, LEFT, RIGHT,ANIM_UP1,ANIM_UP2,ANIM_UP3,ANIM_DOWN1,ANIM_DOWN2,ANIM_DOWN3,ANIM_LEFT1,ANIM_LEFT2,ANIM_LEFT3,ANIM_RIGHT1,ANIM_RIGHT2,ANIM_RIGHT3, HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, SHIELD};
 enum {HAUT, BAS, GAUCHE, DROITE, EPEE_HAUT,EPEE_BAS,EPEE_DROITE,EPEE_GAUCHE, PARER,BOMBE};  /// Différentes actions que peuvent faire les IA's
-enum{GREEN_RUPEE,BLUE_RUPEE,RED_RUPEE,VIDE,MUR,IA,GANON,POT,BOMBE_MAP};
+enum{GREEN_RUPEE,BLUE_RUPEE,RED_RUPEE,VIDE,MUR,IA,GANON,POT,BOMBE_MAP,BOMBE_DEFLAG};    /// Différents éléments trouvables dans le tableau en argument.
 int play (SDL_Surface* screen);
 int movePlayer (int maps[][NB_BLOCS_HAUTEUR], SDL_Rect *position, int direction, Mix_Chunk *s_ruppes);
 void SDL_Delay(Uint32 ms);
@@ -74,15 +77,14 @@ int test_ia(int maps[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
 void blit_items(int maps[][NB_BLOCS_HAUTEUR], SDL_Surface* screen, SDL_Surface* rupees[3], SDL_Surface *bombes[10]);
 void setup_ia(int maps[][NB_BLOCS_HAUTEUR], Player links[NB_PLAYER]);
 bool test_class(int maps[][NB_BLOCS_HAUTEUR], Player links[NB_PLAYER]);
-void item(int maps[][NB_BLOCS_HAUTEUR], Player links[NB_PLAYER], int tours, int joueur);
+void item(int maps[][NB_BLOCS_HAUTEUR], Player links[NB_PLAYER], int tours, Item bombes [100]);
 /*
 Fonction qui renvoie un entier pour faire bouger l'IA
 */
 int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
     int coup; // action retournée à chaque tours
-    int i,j;
-    int dist_x,dist_minx,dist_y,dist_miny; //distance entre link et un rubis
+    int i,j; //distance entre link et un rubis
     int depart_x,depart_y,fin_x,fin_y;
     int rubis[2];
     int dep=tours%20;
@@ -92,39 +94,40 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
     {
         fprintf(stderr,"\ntour %d, j'ai %d points\n",tours,points);
 
-        dist_minx=x-20;
-        dist_miny=y-20;
-
         depart_x=x-20;
         depart_y=y-20;
         fin_x=x+20;
         fin_y=y+20;
 
-        if(depart_x<=MINX) depart_x=MINX+5;
-        else if (fin_x>=MAXX) fin_x=MAXX-5;
-        if (depart_y<=MINY) depart_y=MINY+5;
-        else if (fin_y>=MAXY) fin_y=MAXY-5;
+         fprintf(stderr,"y:%d min :%d, max:%d   ",y,depart_y,fin_y);
 
-          fprintf(stderr,"plage x : %d - %d je suis a %d, plage y : %d,%d je suis a %d ",depart_x,fin_x,x,depart_y,fin_y,y);
+        if(depart_x<=MINX) depart_x=MINX+10;
+        else if (fin_x>=MAXX) fin_x=MAXX-10;
+        if (depart_y<=MINY)
+        {
+            depart_y=MINY+10;
+            fprintf(stderr,"depart change ! : %d",depart_y);
+        }
+        else if (fin_y>=MAXY)
+        {
+            fin_y=MAXY-10;
+            fprintf(stderr,"fin change ! : %d",fin_y);
+        }
+
+     //     fprintf(stderr,"plage x : %d - %d je suis a %d, plage y : %d,%d je suis a %d ",depart_x,fin_x,x,depart_y,fin_y,y);
 
 
-        for (i=depart_x;i<=fin_x;i++)
+        for (i=depart_x;i<fin_x;i++)
         {
             for(j=depart_y;j<fin_y;j++)
             {
                 if(maps_ia[i][j]==2 || maps_ia[i][j]==4 || maps_ia[i][j]==5)
                 {
-                    dist_x=abs(x-i);
-                    dist_y=abs(y-j);
-
-                    if (dist_x<dist_minx && dist_y<dist_miny)
-                    {
-                        dist_x=dist_minx;
-                        dist_y=dist_miny;
-                         rubis[0]=i;   // récupère la position du rubis
-                         rubis[1]=j;
+                    rubis[0]=i;   // récupère la position du rubis
+                    rubis[1]=j;
+                    i=fin_x;
+                    j=fin_y;
                          //fprintf(stderr,"le rubis le plus proche %d,%d : et je suis à %d,%d \n",i,j,x,y);
-                    }
                 }
             }
         }
@@ -160,36 +163,30 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
     }
     else// tant qu'il n'y a pas de rubis on s'éloigne du centre
     {
-        if(x<(MAXX-MINX)/2)
+         if(x>(MAXX-MINX)/2)
         {
-            coup = LEFT;
+            coup=RIGHT;
         }
-        else coup = RIGHT;
-    }
-
-
-       /* for (i=MINX+14;i<MAXX-14;i++) // garde les conditions de remplissage de la map
+        else coup = LEFT;
+         if(x==MINX || x==MAXX ||y==MINY)
         {
-             for (j=MINY+8;j<MAXY-8;j++)
-             {
-                if(maps_ia[i][j]==2 || maps_ia[i][j]==4 || maps_ia[i][j]==5)
-                {
-                    rubis[0]=i;   // récupère la position du rubis
-                    rubis[1]=j;
-                     fprintf(stderr,"j'ai touvé un rubis à %d;%d\n ",i,j);
-                    j=MAXY;    // dès qu'on trouve un rubis on arrête la boucle
-                    i=MAXX;
-
-                }
-             }
-        }*/
-
+            coup=UP;
+        }
+        if(y==MAXY)
+            {
+                coup=DOWN;
+            }
+    }
     return coup;
 }
 
 int ia_2(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
-    return rand()%10;
+    if (rand()%25 == 0)
+    {
+        return  4 + rand()%4;
+    }
+    return  0 + rand()%4;
 }
 
 #endif
