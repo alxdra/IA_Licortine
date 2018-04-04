@@ -88,8 +88,7 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
     int depart_x,depart_y,fin_x,fin_y;
     int recherche =0;
 
-    int rubis[2]={CENTRE_CERCLE_X,CENTRE_CERCLE_Y}; // si ne trouve pas de rubis, se dirige vers le centre
-    int dep=tours%16;
+    int rubis[2]={CENTRE_CERCLE_X+4,CENTRE_CERCLE_Y-4}; // si ne trouve pas de rubis, se dirige vers le centre
 
     int dx,dy,dmax_x,dmax_y;
 
@@ -137,7 +136,6 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
                             dmax_y=dy;
                         }
 
-
                         //i=fin_x;        //met fin à la boucle dès qu'il a une position
                         //j=fin_y;
                         //fprintf(stderr,"x=%d, i =  j= ",x,i,j);
@@ -147,7 +145,7 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
         }
 
     ///Déplacement link pour rubis
-            if (dep<8)
+            if (abs(x-rubis[0])>abs(y-rubis[1]))
             {
                 if (rubis[0]<x)
                 {
