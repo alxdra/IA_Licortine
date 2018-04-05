@@ -16,7 +16,7 @@
 #define BLUE_BONUS  5
 #define RED_BONUS   20
 #define ECART 33
-#define NB_PLAYER 4         // vous pouvez mettre le nombre de joueurs que vous voulez
+#define NB_PLAYER 2        // vous pouvez mettre le nombre de joueurs que vous voulez
 #define DEGAT_EPEE 5
 #define RECUP_RUBIS 3
 #define CENTRE_CERCLE_X  (LARGEUR_FENETRE/2 -50) / TAILLE_BLOC
@@ -83,38 +83,44 @@ Fonction qui renvoie un entier pour faire bouger l'IA
 */
 int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
-    int coup; // action retournée à chaque tours
     int i,j; //distance entre link et un rubis
     int depart_x,depart_y,fin_x,fin_y;
-    int recherche =0;
+    int recherche = 0;
 
     int rubis[2]={CENTRE_CERCLE_X+4,CENTRE_CERCLE_Y-4}; // si ne trouve pas de rubis, se dirige vers le centre
-
-    int dx,dy,dmax_x,dmax_y;
+    int advers[2];
+    int dx,dy,dmin_x,dmin_y; //conditions pour les rubis
+    int ax,ay,amin_x,amin_y; //conditions pour les adversaires
 
     if (points<=0)
     {
-        coup=1;
+        return 1;
     }
+
 
     // recherche localisation de rubis
    else if (tours>=140)
     {
         fprintf(stderr,"\ntour %d, j'ai %d points\n",tours,points);
 
-        depart_x=x-20;
+    ///Définit la zone de recherche des rubis (dans u n rayon de 20 autour de sa position)
+        depart_x=x-20; // d
         depart_y=y-20;
         fin_x=x+20;
         fin_y=y+20;
 
-        dmax_x=depart_x;
-        dmax_y=depart_y;
+        dmin_x=depart_x; // la plus petite distance trouvée
+        dmin_y=depart_y;
 
-///Définit la zone de recherche des rubis afin que ca n'aille pas plus loin que l'arène
-        if(depart_x<=MINX) depart_x=MINX+10;
+    ///Définit la zone de recherche des enemis
+        amin_x=x+3;
+        amin_y=y+3;
+
+
+        /*if(depart_x<=MUR) depart_x=MINX+10;
         else if (fin_x>=MAXX) fin_x=MAXX-10;
         if (depart_y<=MINY) depart_y=MINY+10;
-        else if (fin_y>=MAXY) fin_y=MAXY-10;
+        else if (fin_y>=MAXY) fin_y=MAXY-10;*/
 
 ///Recherche des rubis
         if( x>MINX + 27 && x<MAXX-27)
@@ -125,75 +131,89 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
                 {
                     if(maps_ia[i][j]==GREEN_RUPEE || maps_ia[i][j]==BLUE_RUPEE || maps_ia[i][j]==RED_RUPEE)
                     {
-                        dx=abs(x-i);
+                        dx=abs(x-i); //cacul la distance entre sa potition et la positiion des rubis
                         dy=abs(y-j);
 
-                        if(dx<dmax_x && dy<dmax_y)
+                        if(dx<dmin_x && dy<dmin_y) // si le nouveau rubis trouvé est plus près
                         {
                             rubis[0]=i;   // récupère la position du rubis
                             rubis[1]=j;
-                            dmax_x=dx;
-                            dmax_y=dy;
+                            dmin_x=dx;
+                            dmin_y=dy;
+                            recherche = 1;
                         }
-
-                        //i=fin_x;        //met fin à la boucle dès qu'il a une position
-                        //j=fin_y;
-                        //fprintf(stderr,"x=%d, i =  j= ",x,i,j);
                     }
                 }
             }
         }
-
-    ///Déplacement link pour rubis
-            if (abs(x-rubis[0])>abs(y-rubis[1]))
+///Recherche des IA
+    /*    for (i=x-3;i<x+3;i++)
+        {
+            for (j=y-3;j<y+3;j++)
             {
-                if (rubis[0]<x)
-                {
-                    coup=LEFT;
-                  //  fprintf(stderr,"rubis.x=%d, je suis à %d, je vais à gauche !\n",rubis[0],x);
-                }
-                else
-                {
-                    coup=RIGHT;
-                   // fprintf(stderr,"rubis.x=%d, je suis à %d, je vais à droite!\n",rubis[0],x);
-                }
+                 if(maps_ia[i][j]==IA && i!=x && j!=y) //
+                    {
+                        fprintf(stderr,"trouvé IA");
+                        ax=abs(x-i);
+                        ay=abs(y-j);
+
+                        if(ax<amin_x && ay<amin_y)
+                        {
+                            advers[i]=i;
+                            advers[j]=j;
+                            amin_x=ax;
+                            amin_y=ay;
+                            recherche=2;
+                        }
+                    }
+            }
+        }*/
+
+         if (recherche==2)
+        {
+            if (abs(x-advers[0])>abs(y-advers[1]))
+            {
+                if (advers[0]<x) return LEFT;
+                else  return RIGHT;
             }
             else
             {
-                if (rubis[1]<y)
-                {
-                    coup=UP;
-                   // fprintf(stderr,"rubis.y=%d, je suis à %d, je monte !\n",rubis[1],y);
-                }
-                else
-                {
-                    coup=DOWN;
-                   // fprintf(stderr,"rubis.y=%d, je suis à %d, je descends !\n",rubis[1],y);
-                }
+                if (advers[1]<y) return UP;
+                else  return DOWN;
             }
         }
+        else
+        {
 
+     ///Déplacement link pour rubis
+            if (abs(x-rubis[0])>abs(y-rubis[1]))
+            {
+                if (rubis[0]<x) return LEFT;
+                else  return RIGHT;
+            }
+            else
+            {
+                if (rubis[1]<y) return UP;
+                else  return DOWN;
+            }
+        }
+    }
 /// Tant qu'il n'y a pas de rubis on s'éloigne du centre
-    else
-    {
+   else
+   {
             if(x>(MAXX-MINX)/2)
             {
-                coup=RIGHT;
+                return RIGHT;
             }
-            else coup = LEFT;
+            else  return LEFT;
     }
-
-    return coup;
 
 }
 
+
 int ia_2(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
-    if (rand()%25 == 0)
-    {
-        return  4 + rand()%4;
-    }
-    return  0 + rand()%4;
+   return rand()%4;
 }
 
 #endif
