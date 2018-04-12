@@ -16,7 +16,7 @@
 #define BLUE_BONUS  5
 #define RED_BONUS   20
 #define ECART 33
-#define NB_PLAYER 6    // vous pouvez mettre le nombre de joueurs que vous voulez
+#define NB_PLAYER 2    // vous pouvez mettre le nombre de joueurs que vous voulez
 #define DEGAT_EPEE 5
 #define RECUP_RUBIS 3
 #define CENTRE_CERCLE_X  (LARGEUR_FENETRE/2 -50) / TAILLE_BLOC
@@ -84,30 +84,21 @@ Fonction qui renvoie un entier pour faire bouger l'IA
 int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
     #define RUBIS 1
-    #define ENEMY 2
+
 
     int i,j; //distance entre link et un rubis
     int depart_x,depart_y,fin_x,fin_y;
     int recherche = 0;
 
-    int rubis[2]={CENTRE_CERCLE_X+4,CENTRE_CERCLE_Y-4}; // si ne trouve pas de rubis, se dirige vers le centre
+    int obj[2]={CENTRE_CERCLE_X+4,CENTRE_CERCLE_Y-4}; // si ne trouve pas de rubis, se dirige vers le centre
     int advers[2]; //coordonée des adversaires
     int dx,dy,dmin_x,dmin_y; //conditions pour les rubis
     int ax,ay,amin_x,amin_y; //conditions pour les adversaires
 
-    if (points<=0)
-    {
-        return 1;
-    }
 
-    if (item>0)
-    {
-        fprintf(stderr, "je pose une bombe");
-        return BOMBE;
-    }
 
     // recherche localisation de rubis
-   else if (tours>=140)
+   if (tours>=140)
     {
         fprintf(stderr,"\ntour %d, j'ai %d points\n",tours,points);
 
@@ -125,8 +116,7 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
         amin_y=y+3;
 
 ///Recherche des rubis
-       // if( x>MINX + 27 && x<MAXX-27)
-        //{
+
             for (i=depart_x;i<fin_x;i++)
             {
                 for(j=depart_y;j<fin_y;j++)
@@ -138,8 +128,8 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
 
                         if(dx<dmin_x && dy<dmin_y) // si le nouveau rubis trouvé est plus près
                         {
-                            rubis[0]=i;   // récupère la position du rubis
-                            rubis[1]=j;
+                            obj[0]=i;   // récupère la position du rubis
+                            obj[1]=j;
                             dmin_x=dx;
                             dmin_y=dy;
                             recherche = RUBIS;
@@ -147,22 +137,23 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
                     }
                     if (maps_ia[i][j]==BOMBE_MAP)
                         {
-                            fprintf(stderr,"J ai trouvé une bombe  ");
+                            //fprintf(stderr,"J ai trouvé une bombe  ");
 
                                 if(x>i) return RIGHT;
                                 else return LEFT;
-
-                                /*if(y>j) return DOWN;
-                                else return UP;*/
-
                         }
 
-
+                    if (maps_ia[i][j]==IA && i!=x && j!=y)
+                    {
+                        if(abs(x-i)<10 && abs(y-j)<10 && item >0)
+                        {
+                            return BOMBE;
+                        }
+                    }
                 }
             }
-      //  }
 ///Recherche des IA si ne trouve pas de rubis
-        if ( recherche =! RUBIS)
+      /*  if ( recherche =! RUBIS)
         {
             for (i=x-3;i<x+3;i++)
             {
@@ -170,97 +161,34 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
                 {
                      if(maps_ia[i][j]==IA && i!=x && j!=y) //
                         {
-                            fprintf(stderr,"trouvé IA");
+                           // fprintf(stderr,"trouvé IA");
                             ax=abs(x-i);
                             ay=abs(y-j);
 
                             if(ax<amin_x && ay<amin_y)
                             {
-                                fprintf(stderr,"trouvé IA PLUS PROCHE");
-                                rubis[i]=i;
-                                rubis[j]=j;
+                                //fprintf(stderr,"trouvé IA PLUS PROCHE");
+                                obj[i]=i;
+                                obj[j]=j;
                                 amin_x=ax;
                                 amin_y=ay;
-                                recherche=ENEMY;
                             }
                         }
-
                 }
-            }
-        }
-
-
-
-        /*    if (abs(x-advers[0])>abs(y-advers[1]))
-            {
-                if (advers[0]<x) return LEFT;
-                else  return RIGHT;
-            }
-            else if(abs(x-advers[0])<=abs(y-advers[1]))
-            {
-                if (advers[1]<y) return UP;
-                else  return DOWN;
-            }
-            else if (advers[0]-x==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_DROITE;
-            }
-            else if (x-advers[0]==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_GAUCHE;
-            }
-            else if (advers[1]-y==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_HAUT;
-            }
-             else if (y-advers[1]==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_BAS;
             }
         }*/
 
 
-     ///Déplacement link pour rubis
-      /*  if ( recherche == ENEMY)
-         {
-             if (rubis[0]-x==1)
+            if (abs(x-obj[0])>abs(y-obj[1]))
             {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_DROITE;
-            }
-            else if (x-rubis[0]==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_GAUCHE;
-            }
-            else if (rubis[1]-y==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_HAUT;
-            }
-             else if (y-rubis[1]==1)
-            {
-                fprintf(stderr,("touché ! \n"));
-                return EPEE_BAS;
-            }
-         }
-         else
-         {*/
-            if (abs(x-rubis[0])>abs(y-rubis[1]))
-            {
-                if (rubis[0]<x) return LEFT;
+                if (obj[0]<x) return LEFT;
                 else  return RIGHT;
             }
             else
             {
-                if (rubis[1]<y) return UP;
+                if (obj[1]<y) return UP;
                 else  return DOWN;
             }
-        // }
     }// fin du nombre du tours
 /// Tant qu'il n'y a pas de rubis on s'éloigne du centre
    else
@@ -276,13 +204,50 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
 
 
 int ia_2(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
-{
-    if (tours%10==0 || item >0)
-    {
-        return BOMBE;
+{static bool rupee_targeted = false;
+    static int nearestRupeeX = CENTRE_CERCLE_X, nearestRupeeY = CENTRE_CERCLE_Y;
 
+    // Sinon on regarde le rupee le plus proche et on va le chercher.
+    int i, j;
+    double prevLength = 9999, length = 0;
+
+    // Si on a un pignouf aux alentours de nous, alors on parre les coups
+    if (maps_ia[x-1][y] == IA || maps_ia[x+1][y] == IA || maps_ia[x][y-1] == IA || maps_ia[x][y+1] == IA) {
+        return PARER;
     }
-   return rand()%4;
+
+    if (nearestRupeeX == x && nearestRupeeY == y)
+        rupee_targeted = false;
+
+    // On parcourt la map
+    if (!rupee_targeted) {
+        for (i = 0; i < MAXX; i++) {
+            for (j = 0; j < MAXY; j++) {
+                // Si c'est un rupee
+                if (maps_ia[i][j] == RED_RUPEE || maps_ia[i][j] == BLUE_RUPEE || maps_ia[i][j] == GREEN_RUPEE) {
+                    // On récupere sa distance (module d'un vecteur)
+                    length = sqrt(pow(x - i, 2) + pow(y - j, 2));
+                    // Si la distance actuelle est plus petite
+                    if (length < prevLength) {
+                        // Alors on vise celui là
+                        nearestRupeeX = i;
+                        nearestRupeeY = j;
+                        prevLength = length;
+                        rupee_targeted = true;
+                    }
+                }
+            }
+        }
+    }
+    if (nearestRupeeX > x)
+        return DROITE;
+    if (nearestRupeeX < x)
+        return GAUCHE;
+    if (nearestRupeeY > y)
+        return BAS;
+    if (nearestRupeeY < y)
+        return UP;
+    return PARER;
 }
 
 #endif
