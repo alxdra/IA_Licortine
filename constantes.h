@@ -83,17 +83,17 @@ Fonction qui renvoie un entier pour faire bouger l'IA
 */
 int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
 {
-    #define RUBIS 1
+    int  rubis = 1;
 
 
     int i,j; //distance entre link et un rubis
     int depart_x,depart_y,fin_x,fin_y;
-    int recherche = 0;
+    int recherche=0;
 
     int obj[2]={CENTRE_CERCLE_X+4,CENTRE_CERCLE_Y-4}; // si ne trouve pas de rubis, se dirige vers le centre
-    int advers[2]; //coordonée des adversaires
+
     int dx,dy,dmin_x,dmin_y; //conditions pour les rubis
-    int ax,ay,amin_x,amin_y; //conditions pour les adversaires
+   // int ax,ay,amin_x,amin_y; //conditions pour les adversaires
 
 
 
@@ -112,8 +112,8 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
         dmin_y=depart_y;
 
     ///Définit la zone de recherche des enemis dans un rayon de 3 cases
-        amin_x=x+3;
-        amin_y=y+3;
+       // amin_x=x+3;
+       // amin_y=y+3;
 
 ///Recherche des rubis
 
@@ -132,7 +132,7 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
                             obj[1]=j;
                             dmin_x=dx;
                             dmin_y=dy;
-                            recherche = RUBIS;
+                            recherche = rubis;
                         }
                     }
                     if (maps_ia[i][j]==BOMBE_MAP)
@@ -204,50 +204,8 @@ int ia_1(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, in
 
 
 int ia_2(int maps_ia[][NB_BLOCS_HAUTEUR], int x, int y, int points, int item, int tours)
-{static bool rupee_targeted = false;
-    static int nearestRupeeX = CENTRE_CERCLE_X, nearestRupeeY = CENTRE_CERCLE_Y;
-
-    // Sinon on regarde le rupee le plus proche et on va le chercher.
-    int i, j;
-    double prevLength = 9999, length = 0;
-
-    // Si on a un pignouf aux alentours de nous, alors on parre les coups
-    if (maps_ia[x-1][y] == IA || maps_ia[x+1][y] == IA || maps_ia[x][y-1] == IA || maps_ia[x][y+1] == IA) {
-        return PARER;
-    }
-
-    if (nearestRupeeX == x && nearestRupeeY == y)
-        rupee_targeted = false;
-
-    // On parcourt la map
-    if (!rupee_targeted) {
-        for (i = 0; i < MAXX; i++) {
-            for (j = 0; j < MAXY; j++) {
-                // Si c'est un rupee
-                if (maps_ia[i][j] == RED_RUPEE || maps_ia[i][j] == BLUE_RUPEE || maps_ia[i][j] == GREEN_RUPEE) {
-                    // On récupere sa distance (module d'un vecteur)
-                    length = sqrt(pow(x - i, 2) + pow(y - j, 2));
-                    // Si la distance actuelle est plus petite
-                    if (length < prevLength) {
-                        // Alors on vise celui là
-                        nearestRupeeX = i;
-                        nearestRupeeY = j;
-                        prevLength = length;
-                        rupee_targeted = true;
-                    }
-                }
-            }
-        }
-    }
-    if (nearestRupeeX > x)
-        return DROITE;
-    if (nearestRupeeX < x)
-        return GAUCHE;
-    if (nearestRupeeY > y)
-        return BAS;
-    if (nearestRupeeY < y)
-        return UP;
-    return PARER;
+{
+    return rand()%10;
 }
 
 #endif
